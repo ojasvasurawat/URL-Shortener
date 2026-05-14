@@ -5,7 +5,7 @@ const ObjectId = Schema.ObjectId;
 const UrlMap = new Schema({
     shortenedUrl: {
         type: Map,
-        of: String,
+        of: [String],
         index: true,
     }
 })

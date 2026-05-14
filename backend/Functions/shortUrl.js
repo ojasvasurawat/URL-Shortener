@@ -2,6 +2,8 @@ const { UrlMap } = require("../DB/db");
 
 const mongoose = require("mongoose");
 
+const crypto = require('crypto');
+
 
 function isValidUrl(string) {
   try {
@@ -29,6 +31,23 @@ async function shortUrl(req, res){
         if(isValidUrl(longUrl)){
             if(checkUrl(longUrl)){
                 //shortining url logic;
+                const shortUrl = crypto.createHash("md5").update(longUrl).digest("hex");
+                if(!UrlMap.shortenedUrl.has(shortUrl)){
+                    UrlMap.shortenedUrl.set(shortUrl, [longUrl]);
+                    res.json({
+                        shortUrl: shortUrl
+                    })
+                }
+                else{
+                    //collision logic;
+                    const currArray = UrlMap.shortenedUrl.get(shortUrl);
+                    len = currArray.length;
+                    currArray.push(longUrl);
+                    UrlMap.shortenedUrl.set(shortUrl, currArray);
+                    res.json({
+                        shortUrl: shortUrl+"/"+len
+                    })
+                }
             }
             else{
                 res.json({
