@@ -1,23 +1,26 @@
-const { UrlMap } = require("../DB/db");
-
+const { UrlMapModel } = require("../DB/db");
 const mongoose = require("mongoose");
+const axios = require("axios");
+const ADLER32 = require("adler-32");
 
-const crypto = require('crypto');
+require("dotenv").config();
 
+const MONGODB_URI = process.env.MONGODB_URI;
 
-function isValidUrl(string) {
+mongoose.connect(MONGODB_URI);
+
+function isValidHttpUrl(string) {
   try {
-    new URL(string);
-    return true;
+    const url = new URL(string);
+    return url.protocol === "http:" || url.protocol === "https:";
   } catch (err) {
     return false;
   }
 }
 
-
-async function checkUrl(url){
+async function isUrlLive(url){
     try{
-        const response = await axios.head(url);
+        const response = await axios.head(url, {timeout:5000});
         return response.status >= 200 && response.status < 300;
     }
     catch(err){
@@ -25,45 +28,69 @@ async function checkUrl(url){
     }
 }
 
+
 async function shortUrl(req, res){
+
     try{
-        const longUrl = req.body;
-        if(isValidUrl(longUrl)){
-            if(checkUrl(longUrl)){
-                //shortining url logic;
-                const shortUrl = crypto.createHash("md5").update(longUrl).digest("hex");
-                if(!UrlMap.shortenedUrl.has(shortUrl)){
-                    UrlMap.shortenedUrl.set(shortUrl, [longUrl]);
-                    res.json({
-                        shortUrl: shortUrl
+        let {longUrl} = req.body;
+        if(isValidHttpUrl(longUrl)){
+            longUrl = new URL(longUrl).href;
+            if(isUrlLive(longUrl)){
+                const hashUrl = ADLER32.str(longUrl);
+                const shorturl = (hashUrl >>> 0).toString(16);
+                const doc = await UrlMapModel.findOne({shortUrl:shorturl});
+                if(!doc){
+                    await UrlMapModel.create({
+                        shortUrl: shorturl,
+                        longUrls: [longUrl],
                     })
+                    res.json({
+                        message: "url shortned successfully",
+                        shortUrl: shorturl+"-"+0,
+                    })
+                    return;
                 }
                 else{
-                    //collision logic;
-                    const currArray = UrlMap.shortenedUrl.get(shortUrl);
-                    len = currArray.length;
-                    currArray.push(longUrl);
-                    UrlMap.shortenedUrl.set(shortUrl, currArray);
+                    const arr = doc.longUrls;
+                    if(arr.includes(longUrl)){
+                        const idx = arr.indexOf(longUrl);
+                        res.json({
+                            message: "url shortned successfully",
+                            shortUrl: shorturl+"-"+idx,
+                        })
+                        return;
+                    }
+                    const len = doc.longUrls.length;
+                    await UrlMapModel.updateOne(
+                        {_id: doc._id},
+                        { $push: { longUrls: longUrl}}
+                    );
                     res.json({
-                        shortUrl: shortUrl+"/"+len
+                        message: "url shortned successfully",
+                        shortUrl: shorturl+"-"+len,
                     })
                 }
             }
             else{
                 res.json({
-                    message: "url is down or not working"
+                    message: "url is not live"
                 })
             }
         }
         else{
             res.json({
-                message: "url format is incorrect"
+                message: "invalid url format"
             })
         }
     }
     catch(err){
-        res.json({
-            message: "failure occure during shortning the url"
-        })
+        console.log(err);
+        res.status(500).json({
+            message: "Failed to short url"
+        });
     }
+}
+
+module.exports = {
+    shortUrl,
 }
