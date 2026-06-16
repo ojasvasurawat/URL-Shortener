@@ -1,6 +1,6 @@
 const { UrlMapModel } = require("../DB/db");
 const mongoose = require("mongoose");
-const { shortUrl } = require("./shorturl");
+const { shortUrl } = require("./shortUrl");
 
 require("dotenv").config();
 
