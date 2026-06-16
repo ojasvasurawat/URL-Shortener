@@ -147,7 +147,13 @@ export default function Landing(){
                         <input 
                             type='text'
                             placeholder='Enter the link here'
-                            className='text-white grow'
+                            className='
+                                text-white grow 
+                                overflow-hidden
+                                text-ellipsis
+                                whitespace-nowrap
+                                w-7/10
+                            '
                             onChange={(e) => {setOriginalUrl(e.target.value)}}
                         />
                         <button className="
