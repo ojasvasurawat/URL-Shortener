@@ -8,9 +8,40 @@ require("dotenv").config();
 const APP_PORT = process.env.APP_PORT;
 
 
+const allowedOrigins = [
+  "https://url-shortener-gamma-bay.vercel.app/",
+  "http://localhost:5173"
+];
+
 const app = express();
 
-app.use(cors());
+const limiter = rateLimit({
+  windowMs: 15*60*1000,// 15 min window
+  max: 100,
+  message: {
+    status: 429,
+    error: 'Too many requests from this IP, please try again after 15 minutes.'} 
+})
+
+app.use("/", limiter);
+
+app.use(cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true); // server-to-server, Postman
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true
+  }));
+
+// app.use(cors()); // only for dev
+
+
 app.use(express.json());
 
 app.post('/shortUrl', shortUrl);
