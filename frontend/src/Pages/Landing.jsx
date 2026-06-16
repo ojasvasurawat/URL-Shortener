@@ -1,4 +1,4 @@
-import { LogIn, Link, ArrowRight, Copy } from 'lucide-react';
+import { LogIn, Link, ArrowRight, Copy, Loader } from 'lucide-react';
 import { useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify'
 import axios from 'axios';
@@ -160,8 +160,9 @@ export default function Landing(){
                             lg:px-7
                         "
                         onClick={shortener}
+                        disabled={buttonLoading}
                         >
-                            Shorten Now
+                            { buttonLoading ? "Shortening..." : "Shorten Now"}
                         </button>
                         <button className="
                             block lg:hidden
@@ -173,8 +174,9 @@ export default function Landing(){
                             p-4
                         "
                         onClick={shortener}
+                        disabled={buttonLoading}
                         >
-                            <ArrowRight size={20} className='text-white'/>
+                            { buttonLoading ? <Loader size={20} className='text-white'/> : <ArrowRight size={20} className='text-white'/>}
                         </button>
                     </div>
                     <div className="
