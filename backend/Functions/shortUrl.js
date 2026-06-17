@@ -35,7 +35,7 @@ async function shortUrl(req, res){
         let {longUrl} = req.body;
         if(isValidHttpUrl(longUrl)){
             longUrl = new URL(longUrl).href;
-            if(isUrlLive(longUrl)){
+            if(await isUrlLive(longUrl)){
                 const hashUrl = ADLER32.str(longUrl);
                 const shorturl = (hashUrl >>> 0).toString(16);
                 const doc = await UrlMapModel.findOne({shortUrl:shorturl});
