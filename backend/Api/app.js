@@ -3,6 +3,8 @@ const cors = require("cors");
 const { shortUrl } = require("../Functions/shortUrl");
 const { getLongUrl } = require("../Functions/getLongUrl");
 
+const rateLimit = require('express-rate-limit');
+
 require("dotenv").config();
 
 const APP_PORT = process.env.APP_PORT;
