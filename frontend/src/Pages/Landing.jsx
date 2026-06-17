@@ -22,17 +22,17 @@ export default function Landing(){
                 longUrl: originalUrl
             })
 
-            // console.log(response.data);
-            if(response.data){
+            console.log(response.data);
+            if(response.data.shortUrl){
                 toast.success("url shortened successfully")
                 setShortUrl(backendUrl+"/"+response.data.shortUrl);
             }
             else{
-                toast.error("Process failed")
+                toast.error(`Process failed: ${response.data.message}`)
             }
             setButtonLoading(false);
         }catch(error){
-            console.error("Process failed:", error);
+            console.log("Process failed:", error);
             if (error.response?.data) {
                 setButtonLoading(false)
                 toast.error(`Process failed: ${error.response.data}`);
