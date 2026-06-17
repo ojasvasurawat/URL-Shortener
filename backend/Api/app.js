@@ -11,7 +11,7 @@ const APP_PORT = process.env.APP_PORT;
 
 
 const allowedOrigins = [
-  "https://url-shortener-gamma-bay.vercel.app/",
+  "https://url-shortener-gamma-bay.vercel.app",
   "http://localhost:5173"
 ];
 
